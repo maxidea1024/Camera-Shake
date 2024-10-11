@@ -7,11 +7,11 @@ namespace CameraShake
     /// </summary>
     public class CameraShakePresets
     {
-        readonly CameraShaker shaker;
+        private readonly CameraShaker _shaker;
 
         public CameraShakePresets(CameraShaker shaker)
         {
-            this.shaker = shaker;
+            _shaker = shaker;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace CameraShake
                 freq = freq,
                 numBounces = numBounces
             };
-            shaker.RegisterShake(new BounceShake(pars));
+            _shaker.RegisterShake(new BounceShake(pars));
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace CameraShake
                 freq = freq,
                 numBounces = numBounces
             };
-            shaker.RegisterShake(new BounceShake(pars));
+            _shaker.RegisterShake(new BounceShake(pars));
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace CameraShake
                 noiseModes = modes,
                 envelope = envelopePars,
             };
-            shaker.RegisterShake(new PerlinShake(pars));
+            _shaker.RegisterShake(new PerlinShake(pars));
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace CameraShake
                 noiseModes = modes,
                 envelope = envelopePars,
             };
-            shaker.RegisterShake(new PerlinShake(pars));
+            _shaker.RegisterShake(new PerlinShake(pars));
         }
     }
 }

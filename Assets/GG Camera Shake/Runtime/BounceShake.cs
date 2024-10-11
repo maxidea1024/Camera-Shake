@@ -54,9 +54,14 @@ namespace CameraShake
         {
             if (t < 1)
             {
-
-                t += deltaTime * pars.freq;
-                if (pars.freq == 0) t = 1;
+                if (pars.freq == 0)
+                {
+                    t = 1;
+                }
+                else
+                {
+                    t += deltaTime * pars.freq;
+                }
 
                 CurrentDisplacement = Displacement.Lerp(previousWaypoint, currentWaypoint,
                     moveCurve.Evaluate(t));

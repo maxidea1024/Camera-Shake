@@ -16,7 +16,6 @@ namespace CameraShake
         [Tooltip("Transform which will be affected by the shakes.\n\nCameraShaker will set this transform's local position and rotation.")]
         [SerializeField]
         Transform cameraTransform;
-        
 
         [Tooltip("Scales the strength of all shakes.")]
         [Range(0, 1)]
@@ -24,7 +23,6 @@ namespace CameraShake
         public float StrengthMultiplier = 1;
 
         public CameraShakePresets ShakePresets;
-
 
         /// <summary>
         /// Adds a shake to the list of active shakes.
@@ -40,8 +38,7 @@ namespace CameraShake
         /// </summary>
         public void RegisterShake(ICameraShake shake)
         {
-            shake.Initialize(cameraTransform.position,
-                cameraTransform.rotation);
+            shake.Initialize(cameraTransform.position, cameraTransform.rotation);
             activeShakes.Add(shake);
         }
 
@@ -61,7 +58,9 @@ namespace CameraShake
             ShakePresets = new CameraShakePresets(this);
             Presets = ShakePresets;
             if (cameraTransform == null)
+            {
                 cameraTransform = transform;
+            }
         }
 
         private void Update()

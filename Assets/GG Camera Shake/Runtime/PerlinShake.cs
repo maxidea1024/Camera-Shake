@@ -88,7 +88,6 @@ namespace CameraShake
             return new Displacement(position, rotation);
         }
 
-
         [System.Serializable]
         public class Params
         {
@@ -116,7 +115,6 @@ namespace CameraShake
             [Tooltip("How strength falls with distance from the shake source.")]
             public Attenuator.StrengthAttenuationParams attenuation;
         }
-
 
         [System.Serializable]
         public struct NoiseMode

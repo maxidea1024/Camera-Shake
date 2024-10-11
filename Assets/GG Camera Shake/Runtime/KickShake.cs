@@ -41,7 +41,6 @@ namespace CameraShake
         public Displacement CurrentDisplacement { get; private set; }
         public bool IsFinished { get; private set; }
 
-
         public void Initialize(Vector3 cameraPosition, Quaternion cameraRotation)
         {
             if (sourcePosition != null)

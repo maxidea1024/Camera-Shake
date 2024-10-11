@@ -64,23 +64,30 @@ namespace CameraShake
 
             if (state == EnvelopeState.Increase)
             {
-                if (pars.attack > 0)
+                if (pars.attack > 0f)
+                {
                     amplitude += deltaTime * pars.attack;
-                if (amplitude > targetAmplitude || pars.attack <= 0)
+                }
+
+                if (amplitude > targetAmplitude || pars.attack <= 0f)
                 {
                     amplitude = targetAmplitude;
                     state = EnvelopeState.Sustain;
                     if (controlMode == EnvelopeControlMode.Auto)
+                    {
                         sustainEndTime = Time.time + pars.sustain;
+                    }
                 }
             }
             else
             {
                 if (state == EnvelopeState.Decrease)
                 {
-
                     if (pars.decay > 0)
+                    {
                         amplitude -= deltaTime * pars.decay;
+                    }
+
                     if (amplitude < targetAmplitude || pars.decay <= 0)
                     {
                         amplitude = targetAmplitude;
@@ -114,7 +121,6 @@ namespace CameraShake
             state = targetAmplitude > amplitude ? EnvelopeState.Increase : EnvelopeState.Decrease;
         }
 
-
         [System.Serializable]
         public class EnvelopeParams
         {
@@ -143,9 +149,18 @@ namespace CameraShake
             public Degree degree = Degree.Cubic;
         }
 
-        public enum EnvelopeControlMode { Auto, Manual }
+        public enum EnvelopeControlMode
+        {
+            Auto,
+            Manual
+        }
 
-        public enum EnvelopeState { Sustain, Increase, Decrease }
+        public enum EnvelopeState
+        {
+            Sustain,
+            Increase,
+            Decrease
+        }
     }
 
     public interface IAmplitudeController
