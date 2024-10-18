@@ -7,15 +7,15 @@ namespace CameraShake
     /// </summary>
     public class Envelope : IAmplitudeController
     {
-        readonly EnvelopeParams pars;
-        readonly EnvelopeControlMode controlMode;
+        readonly EnvelopeParams _pars;
+        readonly EnvelopeControlMode _controlMode;
 
-        float amplitude;
-        float targetAmplitude;
-        float sustainEndTime;
-        bool finishWhenAmplitudeZero;
-        bool finishImmediately;
-        EnvelopeState state;
+        float _amplitude;
+        float _targetAmplitude;
+        float _sustainEndTime;
+        bool _finishWhenAmplitudeZero;
+        bool _finishImmediately;
+        EnvelopeState _state;
 
         /// <summary>
         /// Creates an Envelope instance.
@@ -24,8 +24,8 @@ namespace CameraShake
         /// <param name="controlMode">Pass Auto for a single shake, or Manual for controlling strength manually.</param>
         public Envelope(EnvelopeParams pars, float initialTargetAmplitude, EnvelopeControlMode controlMode)
         {
-            this.pars = pars;
-            this.controlMode = controlMode;
+            _pars = pars;
+            _controlMode = controlMode;
             SetTarget(initialTargetAmplitude);
         }
 
@@ -38,78 +38,79 @@ namespace CameraShake
         {
             get
             {
-                if (finishImmediately) return true;
-                return (finishWhenAmplitudeZero || controlMode == EnvelopeControlMode.Auto)
-                    && amplitude <= 0 && targetAmplitude <= 0;
+                if (_finishImmediately) return true;
+
+                return (_finishWhenAmplitudeZero || _controlMode == EnvelopeControlMode.Auto)
+                    && _amplitude <= 0 && _targetAmplitude <= 0;
             }
         }
 
         public void Finish()
         {
-            finishWhenAmplitudeZero = true;
+            _finishWhenAmplitudeZero = true;
             SetTarget(0);
         }
 
         public void FinishImmediately()
         {
-            finishImmediately = true;
+            _finishImmediately = true;
         }
 
         /// <summary>
         /// Update is called every frame by the shake.
         /// </summary>
-        public void Update(float deltaTime)
+        public void Tick(float deltaTime)
         {
             if (IsFinished) return;
 
-            if (state == EnvelopeState.Increase)
+            if (_state == EnvelopeState.Increase)
             {
-                if (pars.attack > 0f)
+                if (_pars.Attack > 0f)
                 {
-                    amplitude += deltaTime * pars.attack;
+                    _amplitude += deltaTime * _pars.Attack;
                 }
 
-                if (amplitude > targetAmplitude || pars.attack <= 0f)
+                if (_amplitude > _targetAmplitude || _pars.Attack <= 0f)
                 {
-                    amplitude = targetAmplitude;
-                    state = EnvelopeState.Sustain;
-                    if (controlMode == EnvelopeControlMode.Auto)
+                    _amplitude = _targetAmplitude;
+                    _state = EnvelopeState.Sustain;
+                    if (_controlMode == EnvelopeControlMode.Auto)
                     {
-                        sustainEndTime = Time.time + pars.sustain;
+                        _sustainEndTime = Time.time + _pars.Sustain;
                     }
                 }
             }
             else
             {
-                if (state == EnvelopeState.Decrease)
+                if (_state == EnvelopeState.Decrease)
                 {
-                    if (pars.decay > 0)
+                    if (_pars.Decay > 0)
                     {
-                        amplitude -= deltaTime * pars.decay;
+                        _amplitude -= deltaTime * _pars.Decay;
                     }
 
-                    if (amplitude < targetAmplitude || pars.decay <= 0)
+                    if (_amplitude < _targetAmplitude || _pars.Decay <= 0)
                     {
-                        amplitude = targetAmplitude;
-                        state = EnvelopeState.Sustain;
+                        _amplitude = _targetAmplitude;
+                        _state = EnvelopeState.Sustain;
                     }
                 }
                 else
                 {
-                    if (controlMode == EnvelopeControlMode.Auto && Time.time > sustainEndTime)
+                    if (_controlMode == EnvelopeControlMode.Auto && Time.time > _sustainEndTime)
                     {
                         SetTarget(0);
                     }
                 }
             }
 
-            amplitude = Mathf.Clamp01(amplitude);
-            Intensity = Power.Evaluate(amplitude, pars.degree);
+            _amplitude = Mathf.Clamp01(_amplitude);
+            Intensity = Power.Evaluate(_amplitude, _pars.Degree);
         }
 
         public void SetTargetAmplitude(float value)
         {
-            if (controlMode == EnvelopeControlMode.Manual && !finishWhenAmplitudeZero)
+            if (_controlMode == EnvelopeControlMode.Manual && !_finishWhenAmplitudeZero)
             {
                 SetTarget(value);
             }
@@ -117,8 +118,8 @@ namespace CameraShake
 
         private void SetTarget(float value)
         {
-            targetAmplitude = Mathf.Clamp01(value);
-            state = targetAmplitude > amplitude ? EnvelopeState.Increase : EnvelopeState.Decrease;
+            _targetAmplitude = Mathf.Clamp01(value);
+            _state = _targetAmplitude > _amplitude ? EnvelopeState.Increase : EnvelopeState.Decrease;
         }
 
         [System.Serializable]
@@ -128,25 +129,25 @@ namespace CameraShake
             /// How fast the amplitude rises.
             /// </summary>
             [Tooltip("How fast the amplitude increases.")]
-            public float attack = 10;
+            public float Attack = 10;
 
             /// <summary>
             /// How long in seconds the amplitude holds a maximum value.
             /// </summary>
             [Tooltip("How long in seconds the amplitude holds maximum value.")]
-            public float sustain = 0;
+            public float Sustain = 0;
 
             /// <summary>
             /// How fast the amplitude falls.
             /// </summary>
             [Tooltip("How fast the amplitude decreases.")]
-            public float decay = 1f;
+            public float Decay = 1f;
 
             /// <summary>
             /// Power in which the amplitude is raised to get intensity.
             /// </summary>
             [Tooltip("Power in which the amplitude is raised to get intensity.")]
-            public Degree degree = Degree.Cubic;
+            public Degree Degree = Degree.Cubic;
         }
 
         public enum EnvelopeControlMode

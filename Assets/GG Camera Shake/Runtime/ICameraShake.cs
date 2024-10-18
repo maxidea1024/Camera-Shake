@@ -22,6 +22,6 @@ namespace CameraShake
         /// <summary>
         /// CameraShaker calls this every frame on active shakes.
         /// </summary>
-        void Update(float deltaTime, Vector3 cameraPosition, Quaternion cameraRotation);
+        void Tick(float deltaTime, Vector3 cameraPosition, Quaternion cameraRotation);
     }
 }

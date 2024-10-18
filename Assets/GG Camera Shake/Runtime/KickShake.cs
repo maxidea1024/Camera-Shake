@@ -4,15 +4,15 @@ namespace CameraShake
 {
     public class KickShake : ICameraShake
     {
-        readonly Params pars;
-        readonly Vector3? sourcePosition;
-        readonly bool attenuateStrength;
+        readonly Params _pars;
+        readonly Vector3? _sourcePosition;
+        readonly bool _attenuateStrength;
 
-        Displacement direction;
-        Displacement prevWaypoint;
-        Displacement currentWaypoint;
-        bool release;
-        float t;
+        Displacement _direction;
+        Displacement _prevWaypoint;
+        Displacement _currentWaypoint;
+        bool _release;
+        float _t;
 
         /// <summary>
         /// Creates an instance of KickShake in the direction from the source to the camera.
@@ -22,9 +22,9 @@ namespace CameraShake
         /// <param name="attenuateStrength">Change strength depending on distance from the camera?</param>
         public KickShake(Params parameters, Vector3 sourcePosition, bool attenuateStrength)
         {
-            pars = parameters;
-            this.sourcePosition = sourcePosition;
-            this.attenuateStrength = attenuateStrength;
+            _pars = parameters;
+            _sourcePosition = sourcePosition;
+            _attenuateStrength = attenuateStrength;
         }
 
         /// <summary>
@@ -34,46 +34,50 @@ namespace CameraShake
         /// <param name="direction">Direction of the kick.</param>
         public KickShake(Params parameters, Displacement direction)
         {
-            pars = parameters;
-            this.direction = direction.Normalized;
+            _pars = parameters;
+            _direction = direction.Normalized;
         }
 
         public Displacement CurrentDisplacement { get; private set; }
+
         public bool IsFinished { get; private set; }
 
         public void Initialize(Vector3 cameraPosition, Quaternion cameraRotation)
         {
-            if (sourcePosition != null)
+            if (_sourcePosition != null)
             {
-                direction = Attenuator.Direction(sourcePosition.Value, cameraPosition, cameraRotation);
-                if (attenuateStrength)
-                    direction *= Attenuator.Strength(pars.attenuation, sourcePosition.Value, cameraPosition);
+                _direction = Attenuator.Direction(_sourcePosition.Value, cameraPosition, cameraRotation);
+                if (_attenuateStrength)
+                {
+                    _direction *= Attenuator.Strength(_pars.Attenuation, _sourcePosition.Value, cameraPosition);
+                }
             }
-            currentWaypoint = Displacement.Scale(direction, pars.strength);
+
+            _currentWaypoint = Displacement.Scale(_direction, _pars.Strength);
         }
 
-        public void Update(float deltaTime, Vector3 cameraPosition, Quaternion cameraRotation)
+        public void Tick(float deltaTime, Vector3 cameraPosition, Quaternion cameraRotation)
         {
-            if (t < 1)
+            if (_t < 1)
             {
                 Move(deltaTime,
-                    release ? pars.releaseTime : pars.attackTime,
-                    release ? pars.releaseCurve : pars.attackCurve);
+                    _release ? _pars.ReleaseTime : _pars.AttackTime,
+                    _release ? _pars.ReleaseCurve : _pars.AttackCurve);
             }
             else
             {
-                CurrentDisplacement = currentWaypoint;
-                prevWaypoint = currentWaypoint;
-                if (release)
+                CurrentDisplacement = _currentWaypoint;
+                _prevWaypoint = _currentWaypoint;
+                if (_release)
                 {
                     IsFinished = true;
                     return;
                 }
                 else
                 {
-                    release = true;
-                    t = 0;
-                    currentWaypoint = Displacement.Zero;
+                    _release = true;
+                    _t = 0;
+                    _currentWaypoint = Displacement.Zero;
                 }
             }
         }
@@ -81,10 +85,14 @@ namespace CameraShake
         private void Move(float deltaTime, float duration, AnimationCurve curve)
         {
             if (duration > 0)
-                t += deltaTime / duration;
+                _t += deltaTime / duration;
             else
-                t = 1;
-            CurrentDisplacement = Displacement.Lerp(prevWaypoint, currentWaypoint, curve.Evaluate(t));
+                _t = 1;
+
+            CurrentDisplacement = Displacement.Lerp(
+                _prevWaypoint,
+                _currentWaypoint,
+                curve.Evaluate(_t));
         }
 
         [System.Serializable]
@@ -94,27 +102,27 @@ namespace CameraShake
             /// Strength of the shake for each axis.
             /// </summary>
             [Tooltip("Strength of the shake for each axis.")]
-            public Displacement strength = new Displacement(Vector3.zero, Vector3.one);
+            public Displacement Strength = new(Vector3.zero, Vector3.one);
 
             /// <summary>
             /// How long it takes to move forward.
             /// </summary>
             [Tooltip("How long it takes to move forward.")]
-            public float attackTime = 0.05f;
-            public AnimationCurve attackCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+            public float AttackTime = 0.05f;
+            public AnimationCurve AttackCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
             /// <summary>
             /// How long it takes to move back.
             /// </summary>
             [Tooltip("How long it takes to move back.")]
-            public float releaseTime = 0.2f;
-            public AnimationCurve releaseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+            public float ReleaseTime = 0.2f;
+            public AnimationCurve ReleaseCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
             /// <summary>
             /// How strength falls with distance from the shake source.
             /// </summary>
             [Tooltip("How strength falls with distance from the shake source.")]
-            public Attenuator.StrengthAttenuationParams attenuation;
+            public Attenuator.StrengthAttenuationParams Attenuation;
         }
     }
 }

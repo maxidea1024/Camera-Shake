@@ -11,16 +11,15 @@ namespace CameraShake
         public static CameraShaker Instance;
         public static CameraShakePresets Presets;
 
-        readonly List<ICameraShake> activeShakes = new List<ICameraShake>();
+        readonly List<ICameraShake> activeShakes = new();
 
         [Tooltip("Transform which will be affected by the shakes.\n\nCameraShaker will set this transform's local position and rotation.")]
         [SerializeField]
-        Transform cameraTransform;
+        private Transform _cameraTransform;
 
         [Tooltip("Scales the strength of all shakes.")]
         [Range(0, 1)]
-        [SerializeField]
-        public float StrengthMultiplier = 1;
+        public float StrengthMultiplier = 1f;
 
         public CameraShakePresets ShakePresets;
 
@@ -30,6 +29,7 @@ namespace CameraShake
         public static void Shake(ICameraShake shake)
         {
             if (IsInstanceNull()) return;
+
             Instance.RegisterShake(shake);
         }
 
@@ -38,7 +38,7 @@ namespace CameraShake
         /// </summary>
         public void RegisterShake(ICameraShake shake)
         {
-            shake.Initialize(cameraTransform.position, cameraTransform.rotation);
+            shake.Initialize(_cameraTransform.position, _cameraTransform.rotation);
             activeShakes.Add(shake);
         }
 
@@ -47,9 +47,8 @@ namespace CameraShake
         /// </summary>
         public void SetCameraTransform(Transform cameraTransform)
         {
-            cameraTransform.localPosition = Vector3.zero;
-            cameraTransform.localEulerAngles = Vector3.zero;
-            this.cameraTransform = cameraTransform;
+            _cameraTransform = cameraTransform;
+            _cameraTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
 
         private void Awake()
@@ -57,31 +56,36 @@ namespace CameraShake
             Instance = this;
             ShakePresets = new CameraShakePresets(this);
             Presets = ShakePresets;
-            if (cameraTransform == null)
+            if (_cameraTransform == null)
             {
-                cameraTransform = transform;
+                _cameraTransform = transform;
             }
         }
 
         private void Update()
         {
-            if (cameraTransform == null) return;
-
-            Displacement cameraDisplacement = Displacement.Zero;
-            for (int i = activeShakes.Count - 1; i >= 0; i--)
+            if (_cameraTransform == null)
             {
-                if (activeShakes[i].IsFinished)
+                return;
+            }
+
+            var cameraDisplacement = Displacement.Zero;
+            for (int activeShakeIndex = activeShakes.Count - 1; activeShakeIndex >= 0; --activeShakeIndex)
+            {
+                if (activeShakes[activeShakeIndex].IsFinished)
                 {
-                    activeShakes.RemoveAt(i);
+                    activeShakes.RemoveAt(activeShakeIndex);
                 }
                 else
                 {
-                    activeShakes[i].Update(Time.deltaTime, cameraTransform.position, cameraTransform.rotation);
-                    cameraDisplacement += activeShakes[i].CurrentDisplacement;
+                    activeShakes[activeShakeIndex].Tick(Time.deltaTime, _cameraTransform.position, _cameraTransform.rotation);
+                    cameraDisplacement += activeShakes[activeShakeIndex].CurrentDisplacement;
                 }
             }
-            cameraTransform.localPosition = StrengthMultiplier * cameraDisplacement.position;
-            cameraTransform.localRotation = Quaternion.Euler(StrengthMultiplier * cameraDisplacement.eulerAngles);
+
+            _cameraTransform.SetLocalPositionAndRotation(
+                StrengthMultiplier * cameraDisplacement.Position,
+                Quaternion.Euler(StrengthMultiplier * cameraDisplacement.EulerAngles));
         }
 
         private static bool IsInstanceNull()
@@ -91,6 +95,7 @@ namespace CameraShake
                 Debug.LogError("CameraShaker Instance is missing!");
                 return true;
             }
+
             return false;
         }
     }

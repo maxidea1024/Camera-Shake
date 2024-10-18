@@ -4,15 +4,15 @@ namespace CameraShake
 {
     public class PerlinShake : ICameraShake
     {
-        readonly Params pars;
-        readonly Envelope envelope;
+        readonly Params _pars;
+        readonly Envelope _envelope;
 
         public IAmplitudeController AmplitudeController;
 
-        Vector2[] seeds;
-        float time;
-        Vector3? sourcePosition;
-        float norm;
+        Vector2[] _seeds;
+        float _time;
+        Vector3? _sourcePosition;
+        float _norm;
 
         /// <summary>
         /// Creates an instance of PerlinShake.
@@ -27,62 +27,67 @@ namespace CameraShake
             Vector3? sourcePosition = null,
             bool manualStrengthControl = false)
         {
-            pars = parameters;
-            envelope = new Envelope(pars.envelope, maxAmplitude,
+            _pars = parameters;
+            _envelope = new Envelope(_pars.Envelope, maxAmplitude,
                 manualStrengthControl ?
                     Envelope.EnvelopeControlMode.Manual : Envelope.EnvelopeControlMode.Auto);
-            AmplitudeController = envelope;
-            this.sourcePosition = sourcePosition;
+            AmplitudeController = _envelope;
+            _sourcePosition = sourcePosition;
         }
 
         public Displacement CurrentDisplacement { get; private set; }
+
         public bool IsFinished { get; private set; }
 
         public void Initialize(Vector3 cameraPosition, Quaternion cameraRotation)
         {
-            seeds = new Vector2[pars.noiseModes.Length];
-            norm = 0;
-            for (int i = 0; i < seeds.Length; i++)
+            _seeds = new Vector2[_pars.NoiseModes.Length];
+            _norm = 0f;
+            for (int i = 0; i < _seeds.Length; i++)
             {
-                seeds[i] = Random.insideUnitCircle * 20;
-                norm += pars.noiseModes[i].amplitude;
+                _seeds[i] = Random.insideUnitCircle * 20f;
+                _norm += _pars.NoiseModes[i].Amplitude;
             }
         }
 
-        public void Update(float deltaTime, Vector3 cameraPosition, Quaternion cameraRotation)
+        public void Tick(float deltaTime, Vector3 cameraPosition, Quaternion cameraRotation)
         {
-            if (envelope.IsFinished)
+            if (_envelope.IsFinished)
             {
                 IsFinished = true;
                 return;
             }
-            time += deltaTime;
-            envelope.Update(deltaTime);
+
+            _time += deltaTime;
+            _envelope.Tick(deltaTime);
 
             Displacement disp = Displacement.Zero;
-            for (int i = 0; i < pars.noiseModes.Length; i++)
+            for (int i = 0; i < _pars.NoiseModes.Length; i++)
             {
-                disp += pars.noiseModes[i].amplitude / norm *
-                    SampleNoise(seeds[i], pars.noiseModes[i].freq);
+                disp += _pars.NoiseModes[i].Amplitude / _norm *
+                    SampleNoise(_seeds[i], _pars.NoiseModes[i].Freq);
             }
 
-            CurrentDisplacement = envelope.Intensity * Displacement.Scale(disp, pars.strength);
-            if (sourcePosition != null)
-                CurrentDisplacement *= Attenuator.Strength(pars.attenuation, sourcePosition.Value, cameraPosition);
+            CurrentDisplacement = _envelope.Intensity * Displacement.Scale(disp, _pars.Strength);
+
+            if (_sourcePosition != null)
+            {
+                CurrentDisplacement *= Attenuator.Strength(_pars.Attenuation, _sourcePosition.Value, cameraPosition);
+            }
         }
 
         private Displacement SampleNoise(Vector2 seed, float freq)
         {
-            Vector3 position = new Vector3(
-                Mathf.PerlinNoise(seed.x + time * freq, seed.y),
-                Mathf.PerlinNoise(seed.x, seed.y + time * freq),
-                Mathf.PerlinNoise(seed.x + time * freq, seed.y + time * freq));
+            var position = new Vector3(
+                Mathf.PerlinNoise(seed.x + _time * freq, seed.y),
+                Mathf.PerlinNoise(seed.x, seed.y + _time * freq),
+                Mathf.PerlinNoise(seed.x + _time * freq, seed.y + _time * freq));
             position -= Vector3.one * 0.5f;
 
-            Vector3 rotation = new Vector3(
-                Mathf.PerlinNoise(-seed.x - time * freq, -seed.y),
-                Mathf.PerlinNoise(-seed.x, -seed.y - time * freq),
-                Mathf.PerlinNoise(-seed.x - time * freq, -seed.y - time * freq));
+            var rotation = new Vector3(
+                Mathf.PerlinNoise(-seed.x - _time * freq, -seed.y),
+                Mathf.PerlinNoise(-seed.x, -seed.y - _time * freq),
+                Mathf.PerlinNoise(-seed.x - _time * freq, -seed.y - _time * freq));
             rotation -= Vector3.one * 0.5f;
 
             return new Displacement(position, rotation);
@@ -95,25 +100,25 @@ namespace CameraShake
             /// Strength of the shake for each axis.
             /// </summary>
             [Tooltip("Strength of the shake for each axis.")]
-            public Displacement strength = new Displacement(Vector3.zero, new Vector3(2, 2, 0.8f));
+            public Displacement Strength = new(Vector3.zero, new Vector3(2, 2, 0.8f));
 
             /// <summary>
             /// Layers of perlin noise with different frequencies.
             /// </summary>
             [Tooltip("Layers of perlin noise with different frequencies.")]
-            public NoiseMode[] noiseModes = { new NoiseMode(12, 1) };
+            public NoiseMode[] NoiseModes = { new(12, 1) };
 
             /// <summary>
             /// Strength over time.
             /// </summary>
             [Tooltip("Strength of the shake over time.")]
-            public Envelope.EnvelopeParams envelope;
+            public Envelope.EnvelopeParams Envelope;
 
             /// <summary>
             /// How strength falls with distance from the shake source.
             /// </summary>
             [Tooltip("How strength falls with distance from the shake source.")]
-            public Attenuator.StrengthAttenuationParams attenuation;
+            public Attenuator.StrengthAttenuationParams Attenuation;
         }
 
         [System.Serializable]
@@ -121,22 +126,22 @@ namespace CameraShake
         {
             public NoiseMode(float freq, float amplitude)
             {
-                this.freq = freq;
-                this.amplitude = amplitude;
+                Freq = freq;
+                Amplitude = amplitude;
             }
 
             /// <summary>
             /// Frequency multiplier for the noise.
             /// </summary>
             [Tooltip("Frequency multiplier for the noise.")]
-            public float freq;
+            public float Freq;
 
             /// <summary>
             /// Amplitude of the mode.
             /// </summary>
             [Tooltip("Amplitude of the mode.")]
             [Range(0, 1)]
-            public float amplitude;
+            public float Amplitude;
         }
     }
 }

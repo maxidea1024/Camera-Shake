@@ -4,19 +4,14 @@
     {
         public static float Evaluate(float value, Degree degree)
         {
-            switch (degree)
+            return degree switch
             {
-                case Degree.Linear:
-                    return value;
-                case Degree.Quadratic:
-                    return value * value;
-                case Degree.Cubic:
-                    return value * value * value;
-                case Degree.Quadric:
-                    return value * value * value * value;
-                default:
-                    return value;
-            }
+                Degree.Linear => value,
+                Degree.Quadratic => value * value,
+                Degree.Cubic => value * value * value,
+                Degree.Quadric => value * value * value * value,
+                _ => value,
+            };
         }
     }
 

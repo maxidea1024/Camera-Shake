@@ -27,12 +27,12 @@ namespace CameraShake
             float freq = 25,
             int numBounces = 5)
         {
-            BounceShake.Params pars = new BounceShake.Params
+            BounceShake.Params pars = new()
             {
-                positionStrength = positionStrength,
-                rotationStrength = rotationStrength,
-                freq = freq,
-                numBounces = numBounces
+                PositionStrength = positionStrength,
+                RotationStrength = rotationStrength,
+                Freq = freq,
+                NumBounces = numBounces
             };
             _shaker.RegisterShake(new BounceShake(pars));
         }
@@ -48,12 +48,12 @@ namespace CameraShake
             float freq = 25,
             int numBounces = 5)
         {
-            BounceShake.Params pars = new BounceShake.Params
+            BounceShake.Params pars = new()
             {
-                axesMultiplier = new Displacement(Vector3.zero, new Vector3(1, 1, 0.4f)),
-                rotationStrength = strength,
-                freq = freq,
-                numBounces = numBounces
+                AxesMultiplier = new Displacement(Vector3.zero, new Vector3(1, 1, 0.4f)),
+                RotationStrength = strength,
+                Freq = freq,
+                NumBounces = numBounces
             };
             _shaker.RegisterShake(new BounceShake(pars));
         }
@@ -71,16 +71,18 @@ namespace CameraShake
         {
             PerlinShake.NoiseMode[] modes =
             {
-                new PerlinShake.NoiseMode(8, 1),
-                new PerlinShake.NoiseMode(20, 0.3f)
+                new(8, 1),
+                new(20, 0.3f)
             };
-            Envelope.EnvelopeParams envelopePars = new Envelope.EnvelopeParams();
-            envelopePars.decay = duration <= 0 ? 1 : 1 / duration;
-            PerlinShake.Params pars = new PerlinShake.Params
+            Envelope.EnvelopeParams envelopePars = new()
             {
-                strength = new Displacement(new Vector3(1, 1) * positionStrength, Vector3.forward * rotationStrength),
-                noiseModes = modes,
-                envelope = envelopePars,
+                Decay = duration <= 0 ? 1 : 1 / duration
+            };
+            PerlinShake.Params pars = new()
+            {
+                Strength = new Displacement(new Vector3(1, 1) * positionStrength, Vector3.forward * rotationStrength),
+                NoiseModes = modes,
+                Envelope = envelopePars,
             };
             _shaker.RegisterShake(new PerlinShake(pars));
         }
@@ -96,16 +98,18 @@ namespace CameraShake
         {
             PerlinShake.NoiseMode[] modes =
             {
-                new PerlinShake.NoiseMode(6, 1),
-                new PerlinShake.NoiseMode(20, 0.2f)
+                new(6, 1),
+                new(20, 0.2f)
             };
-            Envelope.EnvelopeParams envelopePars = new Envelope.EnvelopeParams();
-            envelopePars.decay = duration <= 0 ? 1 : 1 / duration;
-            PerlinShake.Params pars = new PerlinShake.Params
+            Envelope.EnvelopeParams envelopePars = new()
             {
-                strength = new Displacement(Vector3.zero, new Vector3(1, 1, 0.5f) * strength),
-                noiseModes = modes,
-                envelope = envelopePars,
+                Decay = duration <= 0 ? 1 : 1 / duration
+            };
+            PerlinShake.Params pars = new()
+            {
+                Strength = new Displacement(Vector3.zero, new Vector3(1, 1, 0.5f) * strength),
+                NoiseModes = modes,
+                Envelope = envelopePars,
             };
             _shaker.RegisterShake(new PerlinShake(pars));
         }
