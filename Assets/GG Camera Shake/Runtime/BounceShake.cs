@@ -4,16 +4,16 @@ namespace CameraShake
 {
     public class BounceShake : ICameraShake
     {
-        readonly Params _pars;
-        readonly AnimationCurve _moveCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        readonly Vector3? _sourcePosition = null;
+        private readonly Params _pars;
+        private readonly AnimationCurve _moveCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        private readonly Vector3? _sourcePosition = null;
 
-        float _attenuation = 1;
-        Displacement _direction;
-        Displacement _previousWaypoint;
-        Displacement _currentWaypoint;
-        int _bounceIndex;
-        float _t;
+        private float _attenuation = 1;
+        private Displacement _direction;
+        private Displacement _previousWaypoint;
+        private Displacement _currentWaypoint;
+        private int _bounceIndex;
+        private float _t;
 
         /// <summary>
         /// Creates an instance of BounceShake.
@@ -65,8 +65,7 @@ namespace CameraShake
                     _t += deltaTime * _pars.Freq;
                 }
 
-                CurrentDisplacement = Displacement.Lerp(_previousWaypoint, _currentWaypoint,
-                    _moveCurve.Evaluate(_t));
+                CurrentDisplacement = Displacement.Lerp(_previousWaypoint, _currentWaypoint, _moveCurve.Evaluate(_t));
             }
             else
             {
@@ -115,7 +114,7 @@ namespace CameraShake
             /// Frequency of shaking.
             /// </summary>
             [Tooltip("Frequency of shaking.")]
-            public float Freq = 25;
+            public float Freq = 25f;
 
             /// <summary>
             /// Number of vibrations before stop.

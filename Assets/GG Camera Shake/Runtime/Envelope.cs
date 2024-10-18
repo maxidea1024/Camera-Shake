@@ -7,15 +7,15 @@ namespace CameraShake
     /// </summary>
     public class Envelope : IAmplitudeController
     {
-        readonly EnvelopeParams _pars;
-        readonly EnvelopeControlMode _controlMode;
+        private readonly EnvelopeParams _pars;
+        private readonly EnvelopeControlMode _controlMode;
 
-        float _amplitude;
-        float _targetAmplitude;
-        float _sustainEndTime;
-        bool _finishWhenAmplitudeZero;
-        bool _finishImmediately;
-        EnvelopeState _state;
+        private float _amplitude;
+        private float _targetAmplitude;
+        private float _sustainEndTime;
+        private bool _finishWhenAmplitudeZero;
+        private bool _finishImmediately;
+        private EnvelopeState _state;
 
         /// <summary>
         /// Creates an Envelope instance.
@@ -38,17 +38,20 @@ namespace CameraShake
         {
             get
             {
-                if (_finishImmediately) return true;
+                if (_finishImmediately)
+                {
+                    return true;
+                }
 
                 return (_finishWhenAmplitudeZero || _controlMode == EnvelopeControlMode.Auto)
-                    && _amplitude <= 0 && _targetAmplitude <= 0;
+                    && _amplitude <= 0f && _targetAmplitude <= 0f;
             }
         }
 
         public void Finish()
         {
             _finishWhenAmplitudeZero = true;
-            SetTarget(0);
+            SetTarget(0f);
         }
 
         public void FinishImmediately()
@@ -61,7 +64,10 @@ namespace CameraShake
         /// </summary>
         public void Tick(float deltaTime)
         {
-            if (IsFinished) return;
+            if (IsFinished)
+            {
+                return;
+            }
 
             if (_state == EnvelopeState.Increase)
             {
@@ -74,6 +80,7 @@ namespace CameraShake
                 {
                     _amplitude = _targetAmplitude;
                     _state = EnvelopeState.Sustain;
+
                     if (_controlMode == EnvelopeControlMode.Auto)
                     {
                         _sustainEndTime = Time.time + _pars.Sustain;
@@ -84,12 +91,12 @@ namespace CameraShake
             {
                 if (_state == EnvelopeState.Decrease)
                 {
-                    if (_pars.Decay > 0)
+                    if (_pars.Decay > 0f)
                     {
                         _amplitude -= deltaTime * _pars.Decay;
                     }
 
-                    if (_amplitude < _targetAmplitude || _pars.Decay <= 0)
+                    if (_amplitude < _targetAmplitude || _pars.Decay <= 0f)
                     {
                         _amplitude = _targetAmplitude;
                         _state = EnvelopeState.Sustain;
@@ -99,7 +106,7 @@ namespace CameraShake
                 {
                     if (_controlMode == EnvelopeControlMode.Auto && Time.time > _sustainEndTime)
                     {
-                        SetTarget(0);
+                        SetTarget(0f);
                     }
                 }
             }
@@ -129,13 +136,13 @@ namespace CameraShake
             /// How fast the amplitude rises.
             /// </summary>
             [Tooltip("How fast the amplitude increases.")]
-            public float Attack = 10;
+            public float Attack = 10f;
 
             /// <summary>
             /// How long in seconds the amplitude holds a maximum value.
             /// </summary>
             [Tooltip("How long in seconds the amplitude holds maximum value.")]
-            public float Sustain = 0;
+            public float Sustain = 0f;
 
             /// <summary>
             /// How fast the amplitude falls.

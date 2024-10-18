@@ -14,7 +14,7 @@ namespace CameraShake
         {
             Vector3 vec = cameraPosition - sourcePosition;
             float distance = Vector3.Scale(pars.AxesMultiplier, vec).magnitude;
-            float strength = Mathf.Clamp01(1 - (distance - pars.ClippingDistance) / pars.FalloffScale);
+            float strength = Mathf.Clamp01(1f - (distance - pars.ClippingDistance) / pars.FalloffScale);
 
             return Power.Evaluate(strength, pars.FalloffDegree);
         }
@@ -42,13 +42,13 @@ namespace CameraShake
             /// Radius in which shake doesn't lose strength.
             /// </summary>
             [Tooltip("Radius in which shake doesn't lose strength.")]
-            public float ClippingDistance = 10;
+            public float ClippingDistance = 10f;
 
             /// <summary>
             /// Defines how fast strength falls with distance.
             /// </summary>
             [Tooltip("How fast strength falls with distance.")]
-            public float FalloffScale = 50;
+            public float FalloffScale = 50f;
 
             /// <summary>
             /// Power of the falloff function.

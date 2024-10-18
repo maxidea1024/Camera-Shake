@@ -9,10 +9,10 @@ namespace CameraShake
 
         public IAmplitudeController AmplitudeController;
 
-        Vector2[] _seeds;
-        float _time;
-        Vector3? _sourcePosition;
-        float _norm;
+        private Vector2[] _seeds;
+        private float _time;
+        private Vector3? _sourcePosition;
+        private float _norm;
 
         /// <summary>
         /// Creates an instance of PerlinShake.

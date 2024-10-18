@@ -47,6 +47,7 @@ namespace CameraShake
             if (_sourcePosition != null)
             {
                 _direction = Attenuator.Direction(_sourcePosition.Value, cameraPosition, cameraRotation);
+
                 if (_attenuateStrength)
                 {
                     _direction *= Attenuator.Strength(_pars.Attenuation, _sourcePosition.Value, cameraPosition);
@@ -56,27 +57,33 @@ namespace CameraShake
             _currentWaypoint = Displacement.Scale(_direction, _pars.Strength);
         }
 
+        /// <inheritdoc />
         public void Tick(float deltaTime, Vector3 cameraPosition, Quaternion cameraRotation)
         {
-            if (_t < 1)
+            if (_t < 1f)
             {
-                Move(deltaTime,
-                    _release ? _pars.ReleaseTime : _pars.AttackTime,
-                    _release ? _pars.ReleaseCurve : _pars.AttackCurve);
+                if (_release)
+                {
+                    Move(deltaTime, _pars.ReleaseTime, _pars.ReleaseCurve);
+                }
+                else
+                {
+                    Move(deltaTime, _pars.AttackTime, _pars.AttackCurve);
+                }
             }
             else
             {
                 CurrentDisplacement = _currentWaypoint;
                 _prevWaypoint = _currentWaypoint;
+
                 if (_release)
                 {
                     IsFinished = true;
-                    return;
                 }
                 else
                 {
                     _release = true;
-                    _t = 0;
+                    _t = 0f;
                     _currentWaypoint = Displacement.Zero;
                 }
             }
@@ -84,15 +91,16 @@ namespace CameraShake
 
         private void Move(float deltaTime, float duration, AnimationCurve curve)
         {
-            if (duration > 0)
+            if (duration > 0f)
+            {
                 _t += deltaTime / duration;
+            }
             else
-                _t = 1;
+            {
+                _t = 1f;
+            }
 
-            CurrentDisplacement = Displacement.Lerp(
-                _prevWaypoint,
-                _currentWaypoint,
-                curve.Evaluate(_t));
+            CurrentDisplacement = Displacement.Lerp(_prevWaypoint, _currentWaypoint, curve.Evaluate(_t));
         }
 
         [System.Serializable]

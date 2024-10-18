@@ -11,11 +11,11 @@ namespace CameraShake
         public static CameraShaker Instance;
         public static CameraShakePresets Presets;
 
-        readonly List<ICameraShake> activeShakes = new();
+        private readonly List<ICameraShake> activeShakes = new();
 
         [Tooltip("Transform which will be affected by the shakes.\n\nCameraShaker will set this transform's local position and rotation.")]
         [SerializeField]
-        private Transform _cameraTransform;
+        private Transform _cameraRigTransform;
 
         [Tooltip("Scales the strength of all shakes.")]
         [Range(0, 1)]
@@ -38,7 +38,7 @@ namespace CameraShake
         /// </summary>
         public void RegisterShake(ICameraShake shake)
         {
-            shake.Initialize(_cameraTransform.position, _cameraTransform.rotation);
+            shake.Initialize(_cameraRigTransform.position, _cameraRigTransform.rotation);
             activeShakes.Add(shake);
         }
 
@@ -47,8 +47,8 @@ namespace CameraShake
         /// </summary>
         public void SetCameraTransform(Transform cameraTransform)
         {
-            _cameraTransform = cameraTransform;
-            _cameraTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            _cameraRigTransform = cameraTransform;
+            _cameraRigTransform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
 
         private void Awake()
@@ -56,15 +56,15 @@ namespace CameraShake
             Instance = this;
             ShakePresets = new CameraShakePresets(this);
             Presets = ShakePresets;
-            if (_cameraTransform == null)
+            if (_cameraRigTransform == null)
             {
-                _cameraTransform = transform;
+                _cameraRigTransform = transform;
             }
         }
 
         private void Update()
         {
-            if (_cameraTransform == null)
+            if (_cameraRigTransform == null)
             {
                 return;
             }
@@ -78,12 +78,12 @@ namespace CameraShake
                 }
                 else
                 {
-                    activeShakes[activeShakeIndex].Tick(Time.deltaTime, _cameraTransform.position, _cameraTransform.rotation);
+                    activeShakes[activeShakeIndex].Tick(Time.deltaTime, _cameraRigTransform.position, _cameraRigTransform.rotation);
                     cameraDisplacement += activeShakes[activeShakeIndex].CurrentDisplacement;
                 }
             }
 
-            _cameraTransform.SetLocalPositionAndRotation(
+            _cameraRigTransform.SetLocalPositionAndRotation(
                 StrengthMultiplier * cameraDisplacement.Position,
                 Quaternion.Euler(StrengthMultiplier * cameraDisplacement.EulerAngles));
         }
